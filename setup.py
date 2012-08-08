@@ -8,7 +8,7 @@ from setuptools import setup
 
 SCRIPTS = [os.path.sep.join(('scripts', script)) for script in
            os.listdir('scripts')]
-REQUIREMENTS = []
+REQUIREMENTS = ['numpy']
 
 setup(
     name='CpGHMMExample',
