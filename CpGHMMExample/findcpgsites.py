@@ -13,6 +13,7 @@ import argparse
 from math import exp, log
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from CpGHMMExample import gencpgdata
 
@@ -37,6 +38,14 @@ def _parse_fasta_file(fileh):
     fileh.next()
     sequence = ''.join([line.strip() for line in fileh])
     return sequence
+
+
+def _parse_known_sites_file(fileh):
+    sites = []
+    for line in fileh:
+        start, end = line.split(',')
+        sites.append((int(start), int(end)))
+    return sites
 
 
 def log_add(log_value_x, log_value_y):
@@ -70,7 +79,7 @@ def calc_forward_probabilities(sequence, transition_matrix):
     seq_length = len(sequence)
     forward_arr = np.zeros((num_symbols, seq_length))
     # Starting probability will be considered equal for all states.
-    start_prob = log(1 / float(num_symbols))
+    start_prob = log(1 / 8.0)
     prev_symbols = NUC_TO_INDICES[sequence[0]]
     for symbol in prev_symbols:
         forward_arr[symbol, 0] = start_prob
@@ -117,7 +126,7 @@ def calc_backward_probabilities(sequence, transition_matrix):
     seq_length = len(sequence)
     backward_arr = np.zeros((num_symbols, seq_length))
     # Starting probability will be considered equal for all states.
-    start_prob = log(1 / float(num_symbols))
+    start_prob = log(1 / 8.0)
     prev_symbols = NUC_TO_INDICES[sequence[-1]]
     for symbol in prev_symbols:
         backward_arr[symbol, -1] = start_prob
@@ -195,6 +204,24 @@ def identify_cpg_sites(posterior_probabilities, threshold=0.95):
     return sites
 
 
+def output_probabilities(outfileh, probabilities, sequence):
+    outlines = ["{},{}\n".format(nuc, prob) for nuc, prob in
+                zip(sequence, probabilities)]
+    outfileh.writelines(outlines)
+
+
+def plot_probabilities(outfile_name, posterior_probabilities,
+                       known_sites=None):
+    plt.plot(posterior_probabilities, 'k-')
+    if known_sites is not None:
+        for start, end in known_sites:
+            plt.axvspan(start, end, facecolor='r', alpha=0.3)
+    plt.title('CpG site probabilities')
+    plt.xlabel('sequence position')
+    plt.ylabel('CpG site probability')
+    plt.savefig(outfile_name)
+
+
 def make_cli_parser():
     """Creates the command-line interface.
 
@@ -210,6 +237,11 @@ def make_cli_parser():
             'transitions_file', type=argparse.FileType('r'),
             help=("CSV format file containing the Markov state "
                   "transitons")
+    )
+    cli_parser.add_argument(
+            '--known-sites', type=argparse.FileType('r'),
+            help=("CSV format file where each line contains the "
+                  "start and end positions of a known CpG site")
     )
     return cli_parser
 
@@ -233,12 +265,24 @@ def main(argv=None):
             forward_probabilities,
             backward_probabilities,
     )
+    LOGGER.info("Writing probabilities to cpg_probabilities.csv")
+    with open('cpg_probabilities.csv', 'w') as probabilities_outfile:
+        output_probabilities(probabilities_outfile,
+                             posterior_probabilities, sequence)
     LOGGER.info("Identifying CpG sites.")
     cpg_sites = identify_cpg_sites(posterior_probabilities)
     LOGGER.info("Writing CpG sites to cpg_sites.csv")
     with open('cpg_sites.csv', 'w') as sites_outfile:
         gencpgdata.output_sites(sites_outfile, cpg_sites)
 
+    if args.known_sites:
+        LOGGER.info("Parsing known sites file.")
+        known_sites = _parse_known_sites_file(args.known_sites)
+    else:
+        known_sites = None
+    LOGGER.info("Plotting probabilities to cpg_probabilities.png.")
+    plot_probabilities('cpg_probabilities.png', posterior_probabilities,
+                       known_sites)
 
 if __name__ == '__main__':
     main()
