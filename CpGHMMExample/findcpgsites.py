@@ -15,7 +15,7 @@ from math import exp, log
 import numpy as np
 import matplotlib.pyplot as plt
 
-from CpGHMMExample import gencpgdata
+from CpGHMMExample import alglib, gencpgdata
 
 import logging
 LOGGER = logging.getLogger()
@@ -254,7 +254,7 @@ def main(argv=None):
     LOGGER.info("Parsing fasta file.")
     sequence = _parse_fasta_file(args.fasta_file)
     LOGGER.info("Calculating forward probabilities.")
-    forward_probabilities, fwd_overall_prob = calc_forward_probabilities(
+    forward_probabilities, fwd_overall_prob = alglib.calc_forward_probabilities(
             sequence, transition_matrix)
     LOGGER.info("Calculating backward probabilities.")
     backward_probabilities, bkwd_overall_prob = calc_backward_probabilities(

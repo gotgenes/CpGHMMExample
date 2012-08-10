@@ -5,6 +5,7 @@ import os.path
 import sys
 
 from setuptools import setup
+from setuptools.extension import Extension
 
 SCRIPTS = [os.path.sep.join(('scripts', script)) for script in
            os.listdir('scripts')]
@@ -17,6 +18,7 @@ setup(
         author_email='chris.lasher@gmail.com',
         install_requires=REQUIREMENTS,
         packages=['CpGHMMExample'],
+        ext_modules=[Extension('CpGHMMExample.alglib', ['src/alglib.c'])],
         scripts=SCRIPTS,
         url='http://pypi.python.org/pypi/CpGHMMExample',
         license='MIT License',
