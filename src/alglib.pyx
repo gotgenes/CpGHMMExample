@@ -20,7 +20,7 @@ D_DTYPE = np.float64
 ctypedef np.float64_t D_DTYPE_t
 
 
-cdef D_DTYPE_t log_add(D_DTYPE_t log_value_x, D_DTYPE_t log_value_y):
+cpdef D_DTYPE_t log_add(D_DTYPE_t log_value_x, D_DTYPE_t log_value_y):
     """Add two values together in log scale.
 
     The idea here is that the equation :math:`z = x + y` can be
@@ -77,13 +77,17 @@ def calc_forward_probabilities(
     cdef int prev_symbols[2]
     cdef int symbols[2]
     nuc_to_indices(sequence[0], prev_symbols)
-    for symbol in prev_symbols:
-        forward_arr[symbol, 0] = start_prob
+    cdef int j
+    for j in range(2):
+        forward_arr[prev_symbols[j], 0] = start_prob
     # Now calculate for remainder of the sequence.
     cdef unsigned long i
+    cdef int symbol
+    cdef D_DTYPE_t prob_transition_symbol1, prob_transition_symbol2
     for i in range(1, seq_length):
         nuc_to_indices(sequence[i], symbols)
-        for symbol in range(2):
+        for j in range(2):
+            symbol = symbols[j]
             prob_transition_symbol1 = (
                 forward_arr[prev_symbols[0], i-1] +
                 transition_matrix[symbol, prev_symbols[0]]
@@ -100,11 +104,11 @@ def calc_forward_probabilities(
         prev_symbols[0] = symbols[0]
         prev_symbols[1] = symbols[1]
 
-    final_transition_prob1 = (
+    cdef D_DTYPE_t final_transition_prob1 = (
         forward_arr[prev_symbols[0], -1] + start_prob)
-    final_transition_prob2 = (
+    cdef D_DTYPE_t final_transition_prob2 = (
         forward_arr[prev_symbols[1], -1] + start_prob)
-    final_probability = (
+    cdef D_DTYPE_t final_probability = (
         final_transition_prob1 +
         log(1 + exp(final_transition_prob2 - final_transition_prob1))
     )
