@@ -131,6 +131,15 @@ class TestCalcBackwardProbabilities(unittest.TestCase):
                 expected_prob_arr[5,0] + log(1.0 / 8)
         )
 
+        result_prob_arr, result_final_prob = (
+            findcpgsites.calc_backward_probabilities(
+                    sequence, LOG_PROBS)
+        )
+
+        self.assertTrue(
+                np.array_equal(result_prob_arr, expected_prob_arr))
+        self.assertEqual(result_final_prob, expected_final_prob)
+
 
 if __name__ == '__main__':
     unittest.main()
