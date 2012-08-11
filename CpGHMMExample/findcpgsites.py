@@ -257,7 +257,7 @@ def main(argv=None):
     forward_probabilities, fwd_overall_prob = alglib.calc_forward_probabilities(
             sequence, transition_matrix)
     LOGGER.info("Calculating backward probabilities.")
-    backward_probabilities, bkwd_overall_prob = calc_backward_probabilities(
+    backward_probabilities, bkwd_overall_prob = alglib.calc_backward_probabilities(
             sequence, transition_matrix)
     LOGGER.info("Decoding sequence.")
     posterior_probabilities = decode_posterior_probabilities(
