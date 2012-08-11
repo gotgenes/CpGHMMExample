@@ -95,41 +95,50 @@ class TestCalcForwardProbabilities(unittest.TestCase):
 class TestCalcBackwardProbabilities(unittest.TestCase):
     """Tests for calc_backward_probabilities()"""
 
-    #def test_calc_backward_probabilities(self):
-        #sequence = 'CGCA'
-        #expected_prob_arr = np.zeros((8,4))
-        #expected_prob_arr[0,3] = expected_prob_arr[4,3] = log(1.0 / 8)
-        #expected_prob_arr[1,2] = alglib.log_add(
-                #expected_prob_arr[0,3] + LOG_PROBS[1,0],
-                #expected_prob_arr[4,3] + LOG_PROBS[1,4]
-        #)
-        #expected_prob_arr[5,2] = alglib.log_add(
-                #expected_prob_arr[0,3] + LOG_PROBS[5,0],
-                #expected_prob_arr[4,3] + LOG_PROBS[5,4]
-        #)
+    def test_calc_backward_probabilities(self):
+        sequence = 'CGCA'
+        expected_prob_arr = np.zeros((8,4))
+        expected_prob_arr[0,3] = expected_prob_arr[4,3] = log(1.0 / 8)
+        expected_prob_arr[1,2] = alglib.log_add(
+                expected_prob_arr[0,3] + LOG_PROBS[1,0],
+                expected_prob_arr[4,3] + LOG_PROBS[1,4]
+        )
+        expected_prob_arr[5,2] = alglib.log_add(
+                expected_prob_arr[0,3] + LOG_PROBS[5,0],
+                expected_prob_arr[4,3] + LOG_PROBS[5,4]
+        )
 
-        #expected_prob_arr[2,1] = alglib.log_add(
-                #expected_prob_arr[1,2] + LOG_PROBS[2,1],
-                #expected_prob_arr[5,2] + LOG_PROBS[2,5]
-        #)
-        #expected_prob_arr[6,1] = alglib.log_add(
-                #expected_prob_arr[1,2] + LOG_PROBS[6,1],
-                #expected_prob_arr[5,2] + LOG_PROBS[6,5]
-        #)
+        expected_prob_arr[2,1] = alglib.log_add(
+                expected_prob_arr[1,2] + LOG_PROBS[2,1],
+                expected_prob_arr[5,2] + LOG_PROBS[2,5]
+        )
+        expected_prob_arr[6,1] = alglib.log_add(
+                expected_prob_arr[1,2] + LOG_PROBS[6,1],
+                expected_prob_arr[5,2] + LOG_PROBS[6,5]
+        )
 
-        #expected_prob_arr[1,0] = alglib.log_add(
-                #expected_prob_arr[2,1] + LOG_PROBS[1,2],
-                #expected_prob_arr[6,1] + LOG_PROBS[1,6]
-        #)
-        #expected_prob_arr[5,0] = alglib.log_add(
-                #expected_prob_arr[2,1] + LOG_PROBS[5,2],
-                #expected_prob_arr[6,1] + LOG_PROBS[5,6]
-        #)
+        expected_prob_arr[1,0] = alglib.log_add(
+                expected_prob_arr[2,1] + LOG_PROBS[1,2],
+                expected_prob_arr[6,1] + LOG_PROBS[1,6]
+        )
+        expected_prob_arr[5,0] = alglib.log_add(
+                expected_prob_arr[2,1] + LOG_PROBS[5,2],
+                expected_prob_arr[6,1] + LOG_PROBS[5,6]
+        )
 
-        #expected_final_prob = alglib.log_add(
-                #expected_prob_arr[1,0] + log(1.0 / 8),
-                #expected_prob_arr[5,0] + log(1.0 / 8)
-        #)
+        expected_final_prob = alglib.log_add(
+                expected_prob_arr[1,0] + log(1.0 / 8),
+                expected_prob_arr[5,0] + log(1.0 / 8)
+        )
+
+        result_prob_arr, result_final_prob = (
+            alglib.calc_backward_probabilities(
+                    sequence, LOG_PROBS)
+        )
+
+        self.assertTrue(
+                np.array_equal(result_prob_arr, expected_prob_arr))
+        self.assertEqual(result_final_prob, expected_final_prob)
 
 
 if __name__ == '__main__':

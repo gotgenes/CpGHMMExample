@@ -69,7 +69,7 @@ def calc_forward_probabilities(
 
     """
     cdef int num_symbols = transition_matrix.shape[0]
-    cdef unsigned long seq_length = len(sequence)
+    cdef long long seq_length = len(sequence)
     cdef np.ndarray[D_DTYPE_t, ndim=2] forward_arr = np.zeros(
             (num_symbols, seq_length))
     # Starting probability will be considered equal for all states.
@@ -113,4 +113,64 @@ def calc_forward_probabilities(
         log(1 + exp(final_transition_prob2 - final_transition_prob1))
     )
     return forward_arr, final_probability
+
+
+def calc_backward_probabilities(
+        char *sequence,
+        np.ndarray[D_DTYPE_t, ndim=2] transition_matrix
+    ):
+    """Calculate the backward probabilities for a given sequence and
+    transition matrix.
+
+    :param sequence: @todo
+    :param transition_matrix: @todo
+    :returns: @todo
+
+    """
+    cdef int num_symbols = transition_matrix.shape[0]
+    cdef unsigned long seq_length = len(sequence)
+    cdef np.ndarray[D_DTYPE_t, ndim=2] backward_arr = np.zeros(
+            (num_symbols, seq_length))
+    # Starting probability will be considered equal for all states.
+    cdef D_DTYPE_t start_prob = log(1 / 8.0)
+    cdef int prev_symbols[2]
+    cdef int symbols[2]
+    nuc_to_indices(sequence[seq_length-1], prev_symbols)
+    cdef int j
+    for j in range(2):
+        backward_arr[prev_symbols[j], seq_length-1] = start_prob
+    # Now calculate for remainder of the sequence.
+    cdef long long i
+    i = seq_length - 1
+    cdef int symbol
+    cdef D_DTYPE_t prob_transition_symbol1, prob_transition_symbol2
+    for i in range(seq_length-2, -1, -1):
+        nuc_to_indices(sequence[i], symbols)
+        for j in range(2):
+            symbol = symbols[j]
+            prob_transition_symbol1 = (
+                backward_arr[prev_symbols[0], i+1] +
+                transition_matrix[symbol, prev_symbols[0]]
+            )
+            prob_transition_symbol2 = (
+                backward_arr[prev_symbols[1], i+1] +
+                transition_matrix[symbol, prev_symbols[1]]
+            )
+            backward_arr[symbol, i] = (
+                prob_transition_symbol1 +
+                log(1 + exp(prob_transition_symbol2 -
+                            prob_transition_symbol1))
+            )
+        prev_symbols[0] = symbols[0]
+        prev_symbols[1] = symbols[1]
+
+    cdef D_DTYPE_t final_transition_prob1 = (
+        backward_arr[prev_symbols[0], 0] + start_prob)
+    cdef D_DTYPE_t final_transition_prob2 = (
+        backward_arr[prev_symbols[1], 0] + start_prob)
+    cdef D_DTYPE_t final_probability = (
+        final_transition_prob1 +
+        log(1 + exp(final_transition_prob2 - final_transition_prob1))
+    )
+    return backward_arr, final_probability
 
