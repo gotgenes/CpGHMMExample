@@ -26,13 +26,13 @@ LOGGER.setLevel(logging.INFO)
 #FORMATTER = logging.Formatter('%(message)s')
 #STREAM_HANDLER.setFormatter(FORMATTER)
 
+DEFAULT_THRESHOLD = 0.95
 NUC_TO_INDICES = {
     'A': (0, 4),
     'C': (1, 5),
     'G': (2, 6),
     'T': (3, 7)
 }
-
 
 def _parse_fasta_file(fileh):
     fileh.next()
@@ -210,12 +210,17 @@ def output_probabilities(outfileh, probabilities, sequence):
     outfileh.writelines(outlines)
 
 
-def plot_probabilities(outfile_name, posterior_probabilities,
-                       known_sites=None):
+def plot_probabilities(
+        outfile_name,
+        posterior_probabilities,
+        threshold,
+        known_sites=None
+    ):
     plt.plot(posterior_probabilities, 'k-')
     if known_sites is not None:
         for start, end in known_sites:
             plt.axvspan(start, end, facecolor='r', alpha=0.3)
+    plt.axhline(y=threshold, color='k', linestyle=':')
     plt.title('CpG site probabilities')
     plt.xlabel('sequence position')
     plt.ylabel('CpG site probability')
@@ -239,6 +244,11 @@ def make_cli_parser():
                   "transitons")
     )
     cli_parser.add_argument(
+            '--threshold', type=float,
+            default=DEFAULT_THRESHOLD,
+            help=("significance threshold (default: %(default))")
+    )
+    cli_parser.add_argument(
             '--known-sites', type=argparse.FileType('r'),
             help=("CSV format file where each line contains the "
                   "start and end positions of a known CpG site")
@@ -249,6 +259,7 @@ def make_cli_parser():
 def main(argv=None):
     cli_parser = make_cli_parser()
     args = cli_parser.parse_args(argv)
+    threshold = args.threshold if args.threshold else DEFAULT_THRESHOLD
     transition_matrix = np.log(np.loadtxt(args.transitions_file,
                                           delimiter=','))
     LOGGER.info("Parsing fasta file.")
@@ -270,7 +281,7 @@ def main(argv=None):
         output_probabilities(probabilities_outfile,
                              posterior_probabilities, sequence)
     LOGGER.info("Identifying CpG sites.")
-    cpg_sites = identify_cpg_sites(posterior_probabilities)
+    cpg_sites = identify_cpg_sites(posterior_probabilities, threshold)
     LOGGER.info("Writing CpG sites to cpg_sites.csv")
     with open('cpg_sites.csv', 'w') as sites_outfile:
         gencpgdata.output_sites(sites_outfile, cpg_sites)
@@ -281,8 +292,12 @@ def main(argv=None):
     else:
         known_sites = None
     LOGGER.info("Plotting probabilities to cpg_probabilities.png.")
-    plot_probabilities('cpg_probabilities.png', posterior_probabilities,
-                       known_sites)
+    plot_probabilities(
+            'cpg_probabilities.png',
+            posterior_probabilities,
+            threshold,
+            known_sites
+    )
 
 if __name__ == '__main__':
     main()
