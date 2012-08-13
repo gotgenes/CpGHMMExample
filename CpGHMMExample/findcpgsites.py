@@ -89,11 +89,11 @@ def calc_forward_probabilities(sequence, transition_matrix):
         for symbol in symbols:
             prob_transition_symbol1 = (
                 forward_arr[prev_symbols[0], i-1] +
-                transition_matrix[symbol, prev_symbols[0]]
+                transition_matrix[prev_symbols[0], symbol]
             )
             prob_transition_symbol2 = (
                 forward_arr[prev_symbols[1], i-1] +
-                transition_matrix[symbol, prev_symbols[1]]
+                transition_matrix[prev_symbols[1], symbol]
             )
             forward_arr[symbol, i] = (
                 prob_transition_symbol1 +
@@ -136,11 +136,11 @@ def calc_backward_probabilities(sequence, transition_matrix):
         for symbol in symbols:
             prob_transition_symbol1 = (
                 backward_arr[prev_symbols[0], i+1] +
-                transition_matrix[prev_symbols[0], symbol]
+                transition_matrix[symbol, prev_symbols[0]]
             )
             prob_transition_symbol2 = (
                 backward_arr[prev_symbols[1], i+1] +
-                transition_matrix[prev_symbols[1], symbol]
+                transition_matrix[symbol, prev_symbols[1]]
             )
             backward_arr[symbol, i] = (
                 prob_transition_symbol1 +

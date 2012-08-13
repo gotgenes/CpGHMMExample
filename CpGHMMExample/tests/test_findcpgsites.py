@@ -51,30 +51,30 @@ class TestCalcForwardProbabilities(unittest.TestCase):
         expected_prob_arr[1,0] = expected_prob_arr[5,0] = log(1.0 / 8)
 
         expected_prob_arr[2,1] = findcpgsites.log_add(
-                expected_prob_arr[1,0] + LOG_PROBS[2,1],
-                expected_prob_arr[5,0] + LOG_PROBS[2,5]
+                expected_prob_arr[1,0] + LOG_PROBS[1,2],
+                expected_prob_arr[5,0] + LOG_PROBS[5,2]
         )
         expected_prob_arr[6,1] = findcpgsites.log_add(
-                expected_prob_arr[1,0] + LOG_PROBS[6,1],
-                expected_prob_arr[5,0] + LOG_PROBS[6,5]
+                expected_prob_arr[1,0] + LOG_PROBS[1,6],
+                expected_prob_arr[5,0] + LOG_PROBS[5,6]
         )
 
         expected_prob_arr[1,2] = findcpgsites.log_add(
-                expected_prob_arr[2,1] + LOG_PROBS[1,2],
-                expected_prob_arr[6,1] + LOG_PROBS[1,6]
+                expected_prob_arr[2,1] + LOG_PROBS[2,1],
+                expected_prob_arr[6,1] + LOG_PROBS[6,1]
         )
         expected_prob_arr[5,2] = findcpgsites.log_add(
-                expected_prob_arr[2,1] + LOG_PROBS[5,2],
-                expected_prob_arr[6,1] + LOG_PROBS[5,6]
+                expected_prob_arr[2,1] + LOG_PROBS[2,5],
+                expected_prob_arr[6,1] + LOG_PROBS[6,5]
         )
 
         expected_prob_arr[0,3] = findcpgsites.log_add(
-                expected_prob_arr[1,2] + LOG_PROBS[0,1],
-                expected_prob_arr[5,2] + LOG_PROBS[0,5]
+                expected_prob_arr[1,2] + LOG_PROBS[1,0],
+                expected_prob_arr[5,2] + LOG_PROBS[5,0]
         )
         expected_prob_arr[4,3] = findcpgsites.log_add(
-                expected_prob_arr[1,2] + LOG_PROBS[4,1],
-                expected_prob_arr[5,2] + LOG_PROBS[4,5]
+                expected_prob_arr[1,2] + LOG_PROBS[1,4],
+                expected_prob_arr[5,2] + LOG_PROBS[5,4]
         )
 
         expected_final_prob = findcpgsites.log_add(
